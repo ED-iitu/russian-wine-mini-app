@@ -1,23 +1,29 @@
-# Use an official Node.js image from Docker Hub
-FROM node:22.15.0
+FROM ubuntu:20.04
 
-# Set the working directory inside the container
+# Устанавливаем необходимые зависимости
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg2 \
+    lsb-release \
+    ca-certificates
+
+# Добавляем репозиторий NodeSource для установки Node.js 22.x
+RUN curl -sL https://deb.nodesource.com/setup_22.x | bash
+
+# Устанавливаем Node.js 22.15.0
+RUN apt-get install -y nodejs=22.15.0-1nodesource1
+
+# Проверяем версию Node.js
+RUN node -v
+
+# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Copy the package.json and package-lock.json to the container
-COPY package*.json ./
-
-# Install dependencies (production only)
-RUN npm install --production
-
-# Copy the rest of the application code to the container
+# Копируем файлы в контейнер
 COPY . .
 
-# Build the app for production
-RUN npm run build
+# Устанавливаем зависимости
+RUN npm install
 
-# Expose the port that your app will run on
-EXPOSE 3000
-
-# Start the application in production mode
-CMD ["npm", "run", "start"]
+# Запускаем приложение
+CMD ["npm", "run", "dev"]
